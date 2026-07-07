@@ -12,9 +12,15 @@ RUN pnpm deploy --filter=@imput/cobalt-api --prod /prod/api
 
 FROM base AS api
 WORKDIR /app
+RUN apk add --no-cache git
 COPY --from=build --chown=node:node /prod/api /app
-COPY --from=build --chown=node:node /app/.git /app/.git
 COPY --chown=node:node cookies.json /app/cookies.json
+RUN git init -q \
+ && git config user.email "build@local" \
+ && git config user.name "build" \
+ && git add -A \
+ && git commit -qm "railway build" \
+ && chown -R node:node /app/.git
 USER node
 EXPOSE 9000
 CMD [ "node", "src/cobalt" ]
