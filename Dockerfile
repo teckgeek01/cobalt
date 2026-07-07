@@ -18,6 +18,7 @@ COPY --chown=node:node cookies.json /app/cookies.json
 RUN git init -q \
  && git config user.email "build@local" \
  && git config user.name "build" \
+ && git remote add origin https://github.com/teckgeek01/cobalt.git \
  && git add -A \
  && git commit -qm "railway build" \
  && chown -R node:node /app/.git
