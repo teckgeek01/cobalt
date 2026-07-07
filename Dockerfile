@@ -14,7 +14,11 @@ FROM base AS api
 WORKDIR /app
 RUN apk add --no-cache git
 COPY --from=build --chown=node:node /prod/api /app
+
+# --- bake cookies straight into the image ---
 COPY --chown=node:node cookies.json /app/cookies.json
+
+# --- create a minimal git repo so Cobalt's version check passes ---
 RUN git init -q \
  && git config user.email "build@local" \
  && git config user.name "build" \
@@ -22,6 +26,9 @@ RUN git init -q \
  && git add -A \
  && git commit -qm "railway build" \
  && chown -R node:node /app/.git
+
 USER node
 EXPOSE 9000
-CMD [ "node", "src/cobalt" ]
+
+# Startup: prove the cookie file is present (visible in deploy logs), then run.
+CMD sh -c "echo '--- cookie check ---'; ls -la /app/cookies.json && head -c 80 /app/cookies.json; echo; echo '--- starting cobalt ---'; node src/cobalt"
